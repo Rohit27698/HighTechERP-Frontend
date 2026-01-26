@@ -1,44 +1,187 @@
 import React, {useState} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import Footer from '../components/Footer';
 
 export default function Login(){
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const submit = async (e) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
+    
     try{
       const res = await api.auth.login({email, password});
       const data = res.data || res;
-      if (data && data.token) {
+      
+      if (res.error) {
+        setError(res.error.message || 'Login failed. Please check your credentials.');
+      } else if (data && data.token) {
         localStorage.setItem('token', data.token);
         navigate('/');
+        window.location.reload();
       } else {
         setError('Invalid response from server');
       }
-    }catch(err){
-      setError(err.message || 'Login failed');
+    } catch(err){
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="container">
-      <h2>Login</h2>
-      <form onSubmit={submit} className="auth-form">
-        <div>
-          <label>Email</label>
-          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required />
+    <main style={{ padding: '4rem 0', minHeight: 'calc(100vh - 200px)' }}>
+      <div className="container">
+        <div style={{
+          maxWidth: '450px',
+          margin: '0 auto',
+          background: '#fff',
+          padding: '3rem',
+          borderRadius: '16px',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+        }}>
+          <h2 style={{
+            fontSize: '2rem',
+            fontWeight: '700',
+            color: '#2d3748',
+            marginBottom: '0.5rem',
+            textAlign: 'center',
+          }}>
+            Login
+          </h2>
+          <p style={{
+            textAlign: 'center',
+            color: '#718096',
+            marginBottom: '2rem',
+            fontSize: '0.95rem',
+          }}>
+            Sign in to your account to continue
+          </p>
+
+          <form onSubmit={submit} className="auth-form">
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: '600',
+                color: '#2d3748',
+                fontSize: '0.95rem',
+              }}>
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e=>setEmail(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  transition: 'all 0.3s ease',
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: '600',
+                color: '#2d3748',
+                fontSize: '0.95rem',
+              }}>
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={e=>setPassword(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  transition: 'all 0.3s ease',
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              />
+            </div>
+
+            {error && (
+              <div className="note error" style={{ marginBottom: '1.5rem' }}>
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: loading
+                  ? '#a0aec0'
+                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: loading ? 'none' : '0 4px 12px rgba(102, 126, 234, 0.4)',
+                marginBottom: '1rem',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.5)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+                }
+              }}
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+
+            <p style={{
+              textAlign: 'center',
+              color: '#718096',
+              fontSize: '0.9rem',
+            }}>
+              <Link
+                to="/"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                }}
+              >
+                ← Back to Home
+              </Link>
+            </p>
+          </form>
         </div>
-        <div>
-          <label>Password</label>
-          <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
-        </div>
-        <button type="submit">Login</button>
-        {error && <div className="note error">{error}</div>}
-      </form>
-    </div>
+      </div>
+      <Footer />
+    </main>
   )
 }
