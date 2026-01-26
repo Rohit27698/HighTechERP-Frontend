@@ -27,11 +27,28 @@ export default function Cart() {
   }, []);
 
   const handleRemove = async (productId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      if (window.confirm('Please login to manage your cart. Would you like to login now?')) {
+        navigate('/login');
+      }
+      return;
+    }
+    
     try {
-      const token = localStorage.getItem('token');
-      const guest = localStorage.getItem('guest_id');
-      await api.cart.remove({ product_id: productId, guest_id: guest }, token);
-      await fetchCart();
+      const result = await api.cart.remove({ product_id: productId }, token);
+      if (result.error) {
+        if (result.status === 401) {
+          localStorage.removeItem('token');
+          if (window.confirm('Your session has expired. Please login again.')) {
+            navigate('/login');
+          }
+        } else {
+          alert(result.data?.message || 'Failed to remove item. Please try again.');
+        }
+      } else {
+        await fetchCart();
+      }
     } catch (err) {
       alert('Failed to remove item. Please try again.');
       console.error('Remove error:', err);
@@ -40,11 +57,29 @@ export default function Cart() {
 
   const handleUpdateQty = async (productId, newQty) => {
     if (newQty < 1) return;
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      if (window.confirm('Please login to manage your cart. Would you like to login now?')) {
+        navigate('/login');
+      }
+      return;
+    }
+    
     try {
-      const token = localStorage.getItem('token');
-      const guest = localStorage.getItem('guest_id');
-      await api.cart.add({ product_id: productId, quantity: newQty, guest_id: guest }, token);
-      await fetchCart();
+      const result = await api.cart.add({ product_id: productId, quantity: newQty }, token);
+      if (result.error) {
+        if (result.status === 401) {
+          localStorage.removeItem('token');
+          if (window.confirm('Your session has expired. Please login again.')) {
+            navigate('/login');
+          }
+        } else {
+          alert(result.data?.message || 'Failed to update quantity. Please try again.');
+        }
+      } else {
+        await fetchCart();
+      }
     } catch (err) {
       alert('Failed to update quantity. Please try again.');
       console.error('Update error:', err);

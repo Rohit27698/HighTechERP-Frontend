@@ -29,20 +29,39 @@ export default function ProductDetail() {
 
   const handleAdd = async () => {
     const token = localStorage.getItem('token');
-    const guest = localStorage.getItem('guest_id') || Date.now().toString();
-    localStorage.setItem('guest_id', guest);
+    
+    // Check if user is logged in
+    if (!token) {
+      if (window.confirm('Please login to add items to cart. Would you like to login now?')) {
+        navigate('/login');
+      }
+      return;
+    }
     
     setAdding(true);
     try {
-      await api.cart.add({ product_id: id, quantity: qty, guest_id: guest }, token);
-      // Show success message
-      const successMsg = document.createElement('div');
-      successMsg.textContent = '✓ Added to cart!';
-      successMsg.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:1rem 1.5rem;border-radius:8px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
-      document.body.appendChild(successMsg);
-      setTimeout(() => {
-        document.body.removeChild(successMsg);
-      }, 3000);
+      const result = await api.cart.add({ product_id: id, quantity: qty }, token);
+      
+      if (result.error) {
+        if (result.status === 401) {
+          // Unauthorized - token expired or invalid
+          localStorage.removeItem('token');
+          if (window.confirm('Your session has expired. Please login again.')) {
+            navigate('/login');
+          }
+        } else {
+          alert(result.data?.message || 'Failed to add to cart. Please try again.');
+        }
+      } else {
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.textContent = '✓ Added to cart!';
+        successMsg.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:1rem 1.5rem;border-radius:8px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+        document.body.appendChild(successMsg);
+        setTimeout(() => {
+          document.body.removeChild(successMsg);
+        }, 3000);
+      }
     } catch (err) {
       alert('Failed to add to cart. Please try again.');
       console.error('Cart error:', err);

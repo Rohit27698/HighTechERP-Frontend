@@ -8,6 +8,7 @@ import Checkout from './pages/Checkout';
 import Home from './pages/Home';
 import Header from './components/Header';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import ApiDebug from './pages/ApiDebug';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/products" element={<Products/>} />
         <Route path="/products/:id" element={<ProductDetail/>} />
         <Route path="/login" element={<Login/>} />
+        <Route path="/register" element={<Register/>} />
         <Route path="/debug" element={<ApiDebug/>} />
         <Route path="/cart" element={<Cart/>} />
         <Route path="/checkout" element={<Checkout/>} />

@@ -86,7 +86,10 @@ export default function Header(){
               <button className="btn-ghost" onClick={handleLogout}>Logout</button>
             </>
           ) : (
-            <Link to="/login" className="nav-link">Login</Link>
+            <>
+              <Link to="/login" className="nav-link">Login</Link>
+              <Link to="/register" className="nav-link">Sign Up</Link>
+            </>
           )}
         </div>
       </div>

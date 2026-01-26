@@ -3,9 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import Footer from '../components/Footer';
 
-export default function Login(){
+export default function Register(){
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -13,24 +15,41 @@ export default function Login(){
   const submit = async (e) => {
     e.preventDefault();
     setError(null);
+    
+    // Validation
+    if (password !== passwordConfirmation) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+    
     setLoading(true);
     
     try{
       // Get guest_id for cart migration
       const guestId = localStorage.getItem('guest_id');
-      const loginData = { email, password };
+      const registerData = {
+        name,
+        email,
+        password,
+        password_confirmation: passwordConfirmation
+      };
       if (guestId) {
-        loginData.guest_id = guestId;
+        registerData.guest_id = guestId;
       }
       
-      const res = await api.auth.login(loginData);
+      const res = await api.auth.register(registerData);
       const data = res.data || res;
       
       if (res.error) {
-        setError(res.error.message || 'Login failed. Please check your credentials.');
+        setError(res.error.message || res.error.data?.message || 'Registration failed. Please try again.');
       } else if (data && data.token) {
         localStorage.setItem('token', data.token);
-        // Clear guest_id after successful login (cart migrated on backend)
+        // Clear guest_id after successful registration (cart migrated on backend)
         if (guestId) {
           localStorage.removeItem('guest_id');
         }
@@ -40,7 +59,7 @@ export default function Login(){
         setError('Invalid response from server');
       }
     } catch(err){
-      setError(err.message || 'Login failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -64,7 +83,7 @@ export default function Login(){
             marginBottom: '0.5rem',
             textAlign: 'center',
           }}>
-            Login
+            Create Account
           </h2>
           <p style={{
             textAlign: 'center',
@@ -72,10 +91,38 @@ export default function Login(){
             marginBottom: '2rem',
             fontSize: '0.95rem',
           }}>
-            Sign in to your account to continue
+            Sign up to start shopping
           </p>
 
           <form onSubmit={submit} className="auth-form">
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: '600',
+                color: '#2d3748',
+                fontSize: '0.95rem',
+              }}>
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={e=>setName(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  transition: 'all 0.3s ease',
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              />
+            </div>
+
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
                 display: 'block',
@@ -119,6 +166,39 @@ export default function Login(){
                 value={password}
                 onChange={e=>setPassword(e.target.value)}
                 required
+                minLength={8}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  transition: 'all 0.3s ease',
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              />
+              <p style={{ fontSize: '0.75rem', color: '#718096', marginTop: '0.25rem' }}>
+                Must be at least 8 characters
+              </p>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: '600',
+                color: '#2d3748',
+                fontSize: '0.95rem',
+              }}>
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                value={passwordConfirmation}
+                onChange={e=>setPasswordConfirmation(e.target.value)}
+                required
+                minLength={8}
                 style={{
                   width: '100%',
                   padding: '0.75rem 1rem',
@@ -170,7 +250,7 @@ export default function Login(){
                 }
               }}
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
 
             <p style={{
@@ -178,16 +258,16 @@ export default function Login(){
               color: '#718096',
               fontSize: '0.9rem',
             }}>
-              Don't have an account?{' '}
+              Already have an account?{' '}
               <Link
-                to="/register"
+                to="/login"
                 style={{
                   color: '#667eea',
                   textDecoration: 'none',
                   fontWeight: '600',
                 }}
               >
-                Sign Up
+                Login
               </Link>
             </p>
 
