@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -6,6 +6,8 @@ export default function Header(){
   const [settings, setSettings] = useState({});
   const [user, setUser] = useState(null);
   const [cartCount, setCartCount] = useState(0);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(()=>{
@@ -24,6 +26,20 @@ export default function Header(){
       updateCartCount();
     }
   },[]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [dropdownOpen]);
 
   const updateCartCount = async () => {
     try {
@@ -50,6 +66,7 @@ export default function Header(){
     }
     localStorage.removeItem('token');
     setUser(null);
+    setDropdownOpen(false);
     navigate('/');
     window.location.reload();
   }
@@ -87,18 +104,76 @@ export default function Header(){
 
         <div className="profile">
           {user ? (
-            <>
-              <div className="avatar" title={user.name || user.email}>
-                {user.avatar ? (
-                  <img src={api.toFullUrl(user.avatar)} alt={user.name || 'User'}/>
-                ) : (
-                  initials || 'U'
-                )}
-              </div>
-              <Link to="/my-orders" className="nav-link">My Orders</Link>
-              <Link to="/profile" className="nav-link">Profile</Link>
-              <button className="btn-ghost" onClick={handleLogout}>Logout</button>
-            </>
+            <div className="profile-dropdown" ref={dropdownRef}>
+              <button 
+                className="profile-button"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                aria-label="Profile menu"
+              >
+                <div className="avatar" title={user.name || user.email}>
+                  {user.profile_picture ? (
+                    <img src={api.toFullUrl(user.profile_picture)} alt={user.name || 'User'}/>
+                  ) : (
+                    initials || 'U'
+                  )}
+                </div>
+              </button>
+              
+              {dropdownOpen && (
+                <div className="dropdown-menu">
+                  <div className="dropdown-header">
+                    <div className="avatar-lg">
+                      {user.profile_picture ? (
+                        <img src={api.toFullUrl(user.profile_picture)} alt={user.name || 'User'}/>
+                      ) : (
+                        initials || 'U'
+                      )}
+                    </div>
+                    <div className="user-info">
+                      <p className="user-name">{user.name || 'User'}</p>
+                      <p className="user-email">{user.email}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="dropdown-divider"></div>
+                  
+                  <Link 
+                    to="/profile" 
+                    className="dropdown-item"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    My Profile
+                  </Link>
+                  
+                  <Link 
+                    to="/my-orders" 
+                    className="dropdown-item"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path>
+                    </svg>
+                    My Orders
+                  </Link>
+                  
+                  <div className="dropdown-divider"></div>
+                  
+                  <button 
+                    className="dropdown-item logout-btn"
+                    onClick={handleLogout}
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                    </svg>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link to="/login" className="nav-link">Login</Link>
