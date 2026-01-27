@@ -10,6 +10,37 @@ const PAYMENT_PROVIDER = process.env.REACT_APP_PAYMENT_PROVIDER || 'stripe';
 const stripePromise = PAYMENT_PROVIDER === 'stripe' ? loadStripe(process.env.REACT_APP_STRIPE_KEY || '') : null;
 
 function CheckoutForm() {
+    const SKIP_PAYMENT_CHECKOUT = process.env.REACT_APP_SKIP_PAYMENT_CHECKOUT === 'true';
+    // Test order creation without payment
+    const handleTestOrder = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+        const checkoutItems = cartItems.map(i => ({
+          product_id: i.product.id,
+          quantity: i.quantity || 1,
+        }));
+        const res = await api.checkout.create(
+          { items: checkoutItems, billing_address: billing, shipping_address: sameAsBilling ? billing : shipping },
+          token
+        );
+        if (res.error) {
+          setError(res.message || 'Failed to create test order');
+        } else {
+          alert('Test order created!');
+          navigate('/');
+        }
+      } catch (err) {
+        setError('Failed to create test order.');
+      } finally {
+        setLoading(false);
+      }
+    };
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -20,13 +51,47 @@ function CheckoutForm() {
   const [error, setError] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
+  const [billing, setBilling] = useState({ name: '', phone: '', line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India' });
+  const [shipping, setShipping] = useState({ name: '', phone: '', line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India' });
+  const [sameAsBilling, setSameAsBilling] = useState(true);
 
   useEffect(() => {
     async function init() {
       try {
         const token = localStorage.getItem('token');
-        const guest = localStorage.getItem('guest_id');
-        const cart = await api.cart.show(guest, token);
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+        // preload addresses
+        const addrRes = await api.addresses.list(token);
+        const savedAddr = addrRes.data || addrRes;
+        if (Array.isArray(savedAddr) && savedAddr.length) {
+          const billingAddr = savedAddr.find(a => a.is_default_billing) || savedAddr[0];
+          const shippingAddr = savedAddr.find(a => a.is_default_shipping) || billingAddr;
+          setBilling({
+            name: billingAddr.name || '',
+            phone: billingAddr.phone || '',
+            line1: billingAddr.line1 || '',
+            line2: billingAddr.line2 || '',
+            city: billingAddr.city || '',
+            state: billingAddr.state || '',
+            postal_code: billingAddr.postal_code || '',
+            country: billingAddr.country || 'India',
+          });
+          setShipping({
+            name: shippingAddr.name || '',
+            phone: shippingAddr.phone || '',
+            line1: shippingAddr.line1 || '',
+            line2: shippingAddr.line2 || '',
+            city: shippingAddr.city || '',
+            state: shippingAddr.state || '',
+            postal_code: shippingAddr.postal_code || '',
+            country: shippingAddr.country || 'India',
+          });
+        }
+
+        const cart = await api.cart.show('', token);
         const items = Array.isArray(cart) ? cart : [];
         if (items.length === 0) {
           navigate('/cart');
@@ -46,7 +111,7 @@ function CheckoutForm() {
         // Use env or backend to select provider
         const provider = PAYMENT_PROVIDER.toLowerCase();
         const res = await api.checkout.create(
-          { items: checkoutItems, payment_provider: provider },
+          { items: checkoutItems, payment_provider: provider, billing_address: billing, shipping_address: sameAsBilling ? billing : shipping },
           token
         );
         if (res.error) {
@@ -68,6 +133,11 @@ function CheckoutForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     setLoading(true);
     setError(null);
     if (PAYMENT_PROVIDER === 'stripe') {
@@ -202,6 +272,28 @@ function CheckoutForm() {
             }}>
               Payment Information
             </h2>
+            {SKIP_PAYMENT_CHECKOUT && (
+              <button
+                type="button"
+                onClick={handleTestOrder}
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: '#10b981',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1.1rem',
+                  fontWeight: '600',
+                  marginBottom: '1.5rem',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1,
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Creating Test Order...' : 'Create Test Order (No Payment)'}
+              </button>
+            )}
             <form onSubmit={handleSubmit}>
               <div style={{
                 padding: '1.5rem',

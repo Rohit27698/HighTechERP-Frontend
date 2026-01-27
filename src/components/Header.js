@@ -20,16 +20,19 @@ export default function Header(){
         localStorage.removeItem('token');
       });
     }
-    // fetch cart count
-    updateCartCount();
+    if (token) {
+      updateCartCount();
+    }
   },[]);
 
   const updateCartCount = async () => {
     try {
       const token = localStorage.getItem('token');
-      const guest = localStorage.getItem('guest_id') || Date.now().toString();
-      localStorage.setItem('guest_id', guest);
-      const items = await api.cart.show(guest, token);
+      if (!token) {
+        setCartCount(0);
+        return;
+      }
+      const items = await api.cart.show('', token);
       setCartCount(Array.isArray(items) ? items.length : 0);
     } catch (err) {
       console.error('Cart fetch error:', err);
@@ -68,9 +71,18 @@ export default function Header(){
 
         <nav className="nav">
           <Link to="/products" className="nav-link">Shop</Link>
-          <Link to="/cart" className="nav-link">
-            Cart {cartCount > 0 ? `(${cartCount})` : ''}
-          </Link>
+          {user && (
+            <Link to="/cart" className="nav-link" aria-label="Cart">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M3 3h2l1 4h13l-1.5 8h-12z"></path>
+                  <circle cx="9" cy="20" r="1"></circle>
+                  <circle cx="18" cy="20" r="1"></circle>
+                </svg>
+                {cartCount > 0 && <span>({cartCount})</span>}
+              </span>
+            </Link>
+          )}
         </nav>
 
         <div className="profile">
@@ -83,6 +95,8 @@ export default function Header(){
                   initials || 'U'
                 )}
               </div>
+              <Link to="/my-orders" className="nav-link">My Orders</Link>
+              <Link to="/profile" className="nav-link">Profile</Link>
               <button className="btn-ghost" onClick={handleLogout}>Logout</button>
             </>
           ) : (

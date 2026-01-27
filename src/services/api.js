@@ -112,6 +112,22 @@ export const checkout = {
   create: (payload, token) => request('checkout', { method: 'POST', body: payload, token }),
 };
 
+export const addresses = {
+  list: (token) => request('addresses', { token }),
+  create: (payload, token) => request('addresses', { method: 'POST', body: payload, token }),
+  update: (id, payload, token) => request(`addresses/${id}`, { method: 'PUT', body: payload, token }),
+  remove: (id, token) => request(`addresses/${id}`, { method: 'DELETE', token }),
+};
+
+export const orders = {
+  list: (page = 1, token) => request(`orders?page=${page}`, { token }),
+  get: (id, token) => request(`orders/${id}`, { token }),
+};
+
+export const profile = {
+  update: (payload, token) => request('auth/profile', { method: 'PUT', body: payload, token }),
+};
+
 export const settings = {
   get: () => request('business-settings'),
 };
@@ -120,4 +136,4 @@ export const newsletter = {
   subscribe: (payload) => request('newsletter/subscribe', { method: 'POST', body: payload }),
 };
 
-export default { products, auth, cart, checkout, settings, newsletter, toFullUrl };
+export default { products, auth, cart, checkout, addresses, orders, profile, settings, newsletter, toFullUrl };

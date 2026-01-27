@@ -11,13 +11,7 @@ export default function Cart() {
   const fetchCart = async () => {
     try {
       const token = localStorage.getItem('token');
-      let guest = null;
-      if (!token) {
-        guest = localStorage.getItem('guest_id') || Date.now().toString();
-        localStorage.setItem('guest_id', guest);
-      }
-      // If logged in, pass null for guest_id so backend uses user
-      const data = await api.cart.show(token ? null : guest, token);
+      const data = await api.cart.show('', token);
       if (data.error) {
         console.error('Cart fetch error:', data.message);
         setItems([]);
@@ -33,6 +27,11 @@ export default function Cart() {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     fetchCart();
   }, []);
 

@@ -68,3 +68,14 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Test Order Mode (Skip Payment)
+
+For development/testing, you can enable a test order button on the checkout page that creates an order without payment.
+
+- Set `REACT_APP_SKIP_PAYMENT_CHECKOUT=true` in your `.env` file (frontend)
+- Set `SKIP_PAYMENT_CHECKOUT=true` in your backend `.env`
+
+When enabled, a "Create Test Order (No Payment)" button will appear on the checkout page. Clicking it will create an order without requiring payment.
+
+**Remember to set these to `false` in production!**
