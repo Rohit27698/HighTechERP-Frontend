@@ -17,11 +17,26 @@ export default function Home(){
           api.products.list()
         ]);
         
-        setSettings(settingsData.data || settingsData || {});
-        const products = productsData.data || productsData || [];
-        setFeatured(Array.isArray(products) ? products : []);
+        // Handle settings response - backend returns { success: true, data: {...} }
+        if (settingsData.error) {
+          console.error('Settings error:', settingsData.message);
+          setSettings({});
+        } else {
+          setSettings(settingsData.data || settingsData || {});
+        }
+        
+        // Handle products response
+        if (productsData.error) {
+          console.error('Products error:', productsData.message);
+          setFeatured([]);
+        } else {
+          const products = productsData.data || productsData || [];
+          setFeatured(Array.isArray(products) ? products : []);
+        }
       } catch (err) {
         console.error('Error fetching data:', err);
+        setSettings({});
+        setFeatured([]);
       } finally {
         setLoading(false);
       }

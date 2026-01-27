@@ -11,12 +11,22 @@ export default function Cart() {
   const fetchCart = async () => {
     try {
       const token = localStorage.getItem('token');
-      const guest = localStorage.getItem('guest_id') || Date.now().toString();
-      localStorage.setItem('guest_id', guest);
-      const data = await api.cart.show(guest, token);
-      setItems(Array.isArray(data) ? data : []);
+      let guest = null;
+      if (!token) {
+        guest = localStorage.getItem('guest_id') || Date.now().toString();
+        localStorage.setItem('guest_id', guest);
+      }
+      // If logged in, pass null for guest_id so backend uses user
+      const data = await api.cart.show(token ? null : guest, token);
+      if (data.error) {
+        console.error('Cart fetch error:', data.message);
+        setItems([]);
+      } else {
+        setItems(Array.isArray(data) ? data : []);
+      }
     } catch (err) {
       console.error('Cart fetch error:', err);
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -44,7 +54,7 @@ export default function Cart() {
             navigate('/login');
           }
         } else {
-          alert(result.data?.message || 'Failed to remove item. Please try again.');
+          alert(result.message || 'Failed to remove item. Please try again.');
         }
       } else {
         await fetchCart();
@@ -75,7 +85,7 @@ export default function Cart() {
             navigate('/login');
           }
         } else {
-          alert(result.data?.message || 'Failed to update quantity. Please try again.');
+          alert(result.message || 'Failed to update quantity. Please try again.');
         }
       } else {
         await fetchCart();

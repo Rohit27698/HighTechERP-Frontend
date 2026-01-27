@@ -24,12 +24,15 @@ export default function Login(){
       }
       
       const res = await api.auth.login(loginData);
-      const data = res.data || res;
       
       if (res.error) {
-        setError(res.error.message || 'Login failed. Please check your credentials.');
-      } else if (data && data.token) {
-        localStorage.setItem('token', data.token);
+        setError(res.message || 'Login failed. Please check your credentials.');
+      } else if (res.token) {
+        localStorage.setItem('token', res.token);
+        // Store user data if available
+        if (res.user) {
+          localStorage.setItem('user', JSON.stringify(res.user));
+        }
         // Clear guest_id after successful login (cart migrated on backend)
         if (guestId) {
           localStorage.removeItem('guest_id');

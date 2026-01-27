@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import razorpay from '../services/razorpay';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY || '');
+const PAYMENT_PROVIDER = process.env.REACT_APP_PAYMENT_PROVIDER || 'stripe';
+const stripePromise = PAYMENT_PROVIDER === 'stripe' ? loadStripe(process.env.REACT_APP_STRIPE_KEY || '') : null;
 
 function CheckoutForm() {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
   const [clientSecret, setClientSecret] = useState(null);
+  const [razorpayOrder, setRazorpayOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initLoading, setInitLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,12 +28,10 @@ function CheckoutForm() {
         const guest = localStorage.getItem('guest_id');
         const cart = await api.cart.show(guest, token);
         const items = Array.isArray(cart) ? cart : [];
-        
         if (items.length === 0) {
           navigate('/cart');
           return;
         }
-
         setCartItems(items);
         const cartTotal = items.reduce((sum, it) => {
           const price = parseFloat(it.product?.price || 0);
@@ -38,21 +39,22 @@ function CheckoutForm() {
           return sum + (price * qty);
         }, 0);
         setTotal(cartTotal);
-
         const checkoutItems = items.map(i => ({
           product_id: i.product.id,
           quantity: i.quantity || 1,
         }));
-
+        // Use env or backend to select provider
+        const provider = PAYMENT_PROVIDER.toLowerCase();
         const res = await api.checkout.create(
-          { items: checkoutItems, payment_provider: 'stripe' },
+          { items: checkoutItems, payment_provider: provider },
           token
         );
-
         if (res.error) {
-          setError(res.error.message || 'Failed to initialize checkout');
-        } else {
+          setError(res.message || 'Failed to initialize checkout');
+        } else if (provider === 'stripe') {
           setClientSecret(res.payment_intent?.client_secret || res.client_secret || null);
+        } else if (provider === 'razorpay') {
+          setRazorpayOrder(res.razorpay_order || null);
         }
       } catch (err) {
         console.error('Checkout init error:', err);
@@ -66,31 +68,45 @@ function CheckoutForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements || !clientSecret) return;
-    
     setLoading(true);
     setError(null);
-    
-    const card = elements.getElement(CardElement);
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card },
-    });
-
-    if (result.error) {
-      setError(result.error.message);
-    } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-      // Show success message
-      const successMsg = document.createElement('div');
-      successMsg.textContent = '✓ Payment successful! Redirecting...';
-      successMsg.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:1rem 1.5rem;border-radius:8px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
-      document.body.appendChild(successMsg);
-      
-      setTimeout(() => {
-        document.body.removeChild(successMsg);
-        navigate('/');
-      }, 2000);
+    if (PAYMENT_PROVIDER === 'stripe') {
+      if (!stripe || !elements || !clientSecret) return;
+      const card = elements.getElement(CardElement);
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card },
+      });
+      if (result.error) {
+        setError(result.error.message);
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        const successMsg = document.createElement('div');
+        successMsg.textContent = '✓ Payment successful! Redirecting...';
+        successMsg.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:1rem 1.5rem;border-radius:8px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+        document.body.appendChild(successMsg);
+        setTimeout(() => {
+          document.body.removeChild(successMsg);
+          navigate('/');
+        }, 2000);
+      }
+    } else if (PAYMENT_PROVIDER === 'razorpay' && razorpayOrder) {
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        order_id: razorpayOrder.id,
+        name: 'Checkout',
+        description: 'Order Payment',
+        handler: function (response) {
+          // You can verify payment on backend here
+          alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
+          navigate('/');
+        },
+        prefill: {},
+        theme: { color: '#667eea' },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     }
-    
     setLoading(false);
   };
 
@@ -313,9 +329,12 @@ function CheckoutForm() {
 }
 
 export default function Checkout() {
-  return (
-    <Elements stripe={stripePromise}>
-      <CheckoutForm />
-    </Elements>
-  );
+  if (PAYMENT_PROVIDER === 'stripe') {
+    return (
+      <Elements stripe={stripePromise}>
+        <CheckoutForm />
+      </Elements>
+    );
+  }
+  return <CheckoutForm />;
 }

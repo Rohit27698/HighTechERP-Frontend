@@ -14,11 +14,20 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         const data = await api.products.list();
-        const productsList = data.data || data || [];
-        setProducts(Array.isArray(productsList) ? productsList : []);
-        setFilteredProducts(Array.isArray(productsList) ? productsList : []);
+        
+        if (data.error) {
+          console.error('Products error:', data.message);
+          setProducts([]);
+          setFilteredProducts([]);
+        } else {
+          const productsList = data.data || data || [];
+          setProducts(Array.isArray(productsList) ? productsList : []);
+          setFilteredProducts(Array.isArray(productsList) ? productsList : []);
+        }
       } catch (err) {
         console.error('Error fetching products:', err);
+        setProducts([]);
+        setFilteredProducts([]);
       } finally {
         setLoading(false);
       }

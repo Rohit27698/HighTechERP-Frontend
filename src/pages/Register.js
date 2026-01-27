@@ -43,12 +43,15 @@ export default function Register(){
       }
       
       const res = await api.auth.register(registerData);
-      const data = res.data || res;
       
       if (res.error) {
-        setError(res.error.message || res.error.data?.message || 'Registration failed. Please try again.');
-      } else if (data && data.token) {
-        localStorage.setItem('token', data.token);
+        setError(res.message || 'Registration failed. Please try again.');
+      } else if (res.token) {
+        localStorage.setItem('token', res.token);
+        // Store user data if available
+        if (res.user) {
+          localStorage.setItem('user', JSON.stringify(res.user));
+        }
         // Clear guest_id after successful registration (cart migrated on backend)
         if (guestId) {
           localStorage.removeItem('guest_id');
