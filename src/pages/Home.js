@@ -60,14 +60,29 @@ export default function Home(){
         : [])
     : [];
 
+  const sliderImages2 = settings.ecom_slider_images_2 
+    ? (Array.isArray(settings.ecom_slider_images_2) 
+        ? settings.ecom_slider_images_2.map(i => api.toFullUrl(i))
+        : [])
+    : [];
+
   return (
     <main>
-      {/* Hero Carousel Section */}
+      {/* Hero Carousel Section (Slider 1) */}
       <section className="hero">
         <div className="container">
           <Carousel images={sliderImages} />
         </div>
       </section>
+
+      {/* Secondary Carousel Section (Slider 2) */}
+      {sliderImages2.length > 0 && (
+        <section className="hero hero-secondary">
+          <div className="container">
+            <Carousel images={sliderImages2} />
+          </div>
+        </section>
+      )}
 
       {/* Featured Products Section */}
       <section className="featured container">
