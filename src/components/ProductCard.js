@@ -6,6 +6,7 @@ export default function ProductCard({product}){
   const img = product.image || (product.images && product.images[0]) || product.thumbnail;
   const src = api.toFullUrl(img);
   const price = product.price ? parseFloat(product.price).toLocaleString('en-IN') : '0';
+  const stock = typeof product.stock === 'number' ? product.stock : null;
 
   return (
     <div className="product-card fade-in">
@@ -18,6 +19,21 @@ export default function ProductCard({product}){
               e.target.src = 'https://via.placeholder.com/300x220?text=No+Image';
             }}
           />
+          {stock !== null && (
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px',
+              background: stock > 0 ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+              color: '#fff',
+              padding: '0.25rem 0.6rem',
+              borderRadius: '6px',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+            }}>
+              {stock > 0 ? `In stock: ${stock}` : 'Out of stock'}
+            </div>
+          )}
           {product.vendor && (
             <div style={{
               position: 'absolute',

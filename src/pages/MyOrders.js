@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import Footer from '../components/Footer';
 
@@ -86,6 +86,9 @@ export default function MyOrders() {
                   {order.items?.length > 3 && (
                     <div style={{ marginTop: '0.25rem', color: '#718096' }}>+{order.items.length - 3} more items</div>
                   )}
+                </div>
+                <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+                  <Link to={`/my-orders/${order.id}`} style={{ color: '#667eea', fontWeight: '600' }}>View details →</Link>
                 </div>
               </div>
             ))}

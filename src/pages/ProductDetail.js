@@ -9,6 +9,7 @@ export default function ProductDetail() {
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [stock, setStock] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -18,6 +19,8 @@ export default function ProductDetail() {
       try {
         const data = await api.products.get(id);
         setProduct(data.data || data);
+        const prod = data.data || data;
+        setStock(typeof prod?.stock === 'number' ? prod.stock : null);
       } catch (err) {
         console.error('Error fetching product:', err);
       } finally {
@@ -37,7 +40,15 @@ export default function ProductDetail() {
       }
       return;
     }
-    
+    if (stock !== null && stock <= 0) {
+      alert('This product is out of stock.');
+      return;
+    }
+    if (stock !== null && qty > stock) {
+      alert(`Only ${stock} left in stock.`);
+      return;
+    }
+
     setAdding(true);
     try {
       const result = await api.cart.add({ product_id: id, quantity: qty }, token);
@@ -194,6 +205,11 @@ export default function ProductDetail() {
             }}>
               ₹{price}
             </div>
+            {stock !== null && (
+              <div style={{ marginBottom: '1rem', fontWeight: '600', color: stock > 0 ? '#10b981' : '#e53e3e' }}>
+                {stock > 0 ? `In stock: ${stock}` : 'Out of stock'}
+              </div>
+            )}
 
             {product.description && (
               <div style={{
@@ -228,8 +244,9 @@ export default function ProductDetail() {
                 <input
                   type="number"
                   min="1"
+                  max={stock || undefined}
                   value={qty}
-                  onChange={e => setQty(Math.max(1, parseInt(e.target.value || 1)))}
+                  onChange={e => setQty(Math.max(1, Math.min(stock || Infinity, parseInt(e.target.value || 1))))}
                   style={{
                     width: '100px',
                     padding: '0.75rem',
@@ -241,7 +258,7 @@ export default function ProductDetail() {
                 />
                 <button
                   onClick={handleAdd}
-                  disabled={adding}
+                  disabled={adding || (stock !== null && stock <= 0)}
                   style={{
                     flex: 1,
                     padding: '0.75rem 1.5rem',

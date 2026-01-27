@@ -54,6 +54,15 @@ function CheckoutForm() {
   const [billing, setBilling] = useState({ name: '', phone: '', line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India' });
   const [shipping, setShipping] = useState({ name: '', phone: '', line1: '', line2: '', city: '', state: '', postal_code: '', country: 'India' });
   const [sameAsBilling, setSameAsBilling] = useState(true);
+  const updateBilling = (field, value) => setBilling(prev => ({ ...prev, [field]: value }));
+  const updateShipping = (field, value) => setShipping(prev => ({ ...prev, [field]: value }));
+  const inputStyle = {
+    width: '100%',
+    padding: '0.75rem',
+    border: '2px solid #e2e8f0',
+    borderRadius: '8px',
+    fontSize: '1rem',
+  };
 
   useEffect(() => {
     async function init() {
@@ -66,9 +75,11 @@ function CheckoutForm() {
         // preload addresses
         const addrRes = await api.addresses.list(token);
         const savedAddr = addrRes.data || addrRes;
+        let billingAddr = null;
+        let shippingAddr = null;
         if (Array.isArray(savedAddr) && savedAddr.length) {
-          const billingAddr = savedAddr.find(a => a.is_default_billing) || savedAddr[0];
-          const shippingAddr = savedAddr.find(a => a.is_default_shipping) || billingAddr;
+          billingAddr = savedAddr.find(a => a.is_default_billing) || savedAddr[0];
+          shippingAddr = savedAddr.find(a => a.is_default_shipping) || billingAddr;
           setBilling({
             name: billingAddr.name || '',
             phone: billingAddr.phone || '',
@@ -110,8 +121,31 @@ function CheckoutForm() {
         }));
         // Use env or backend to select provider
         const provider = PAYMENT_PROVIDER.toLowerCase();
+        const billingToSend = billingAddr ? {
+          name: billingAddr.name || '',
+          phone: billingAddr.phone || '',
+          line1: billingAddr.line1 || '',
+          line2: billingAddr.line2 || '',
+          city: billingAddr.city || '',
+          state: billingAddr.state || '',
+          postal_code: billingAddr.postal_code || '',
+          country: billingAddr.country || 'India',
+        } : billing;
+        const shippingToSend = sameAsBilling
+          ? billingToSend
+          : (shippingAddr ? {
+              name: shippingAddr.name || '',
+              phone: shippingAddr.phone || '',
+              line1: shippingAddr.line1 || '',
+              line2: shippingAddr.line2 || '',
+              city: shippingAddr.city || '',
+              state: shippingAddr.state || '',
+              postal_code: shippingAddr.postal_code || '',
+              country: shippingAddr.country || 'India',
+            } : shipping);
+
         const res = await api.checkout.create(
-          { items: checkoutItems, payment_provider: provider, billing_address: billing, shipping_address: sameAsBilling ? billing : shipping },
+          { items: checkoutItems, payment_provider: provider, billing_address: billingToSend, shipping_address: shippingToSend },
           token
         );
         if (res.error) {
@@ -258,20 +292,74 @@ function CheckoutForm() {
         }}
         className="checkout-grid"
         >
-          <div style={{
-            background: '#fff',
-            padding: '2rem',
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              marginBottom: '1.5rem',
-              color: '#2d3748',
+          <div style={{ display: 'grid', gap: '1.5rem' }}>
+            {/* Addresses */}
+            <div style={{
+              background: '#fff',
+              padding: '1.5rem',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
             }}>
-              Payment Information
-            </h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem', color: '#2d3748' }}>Billing Address</h2>
+              <div className="address-grid" style={{ display: 'grid', gap: '0.75rem' }}>
+                <input style={inputStyle} placeholder="Full name" value={billing.name} onChange={e => updateBilling('name', e.target.value)} required />
+                <input style={inputStyle} placeholder="Phone" value={billing.phone} onChange={e => updateBilling('phone', e.target.value)} />
+                <input style={inputStyle} placeholder="Address line 1" value={billing.line1} onChange={e => updateBilling('line1', e.target.value)} required />
+                <input style={inputStyle} placeholder="Address line 2" value={billing.line2} onChange={e => updateBilling('line2', e.target.value)} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '0.75rem' }}>
+                  <input style={inputStyle} placeholder="City" value={billing.city} onChange={e => updateBilling('city', e.target.value)} required />
+                  <input style={inputStyle} placeholder="State" value={billing.state} onChange={e => updateBilling('state', e.target.value)} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '0.75rem' }}>
+                  <input style={inputStyle} placeholder="Postal code" value={billing.postal_code} onChange={e => updateBilling('postal_code', e.target.value)} />
+                  <input style={inputStyle} placeholder="Country" value={billing.country} onChange={e => updateBilling('country', e.target.value)} />
+                </div>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', color: '#4a5568' }}>
+                <input type="checkbox" checked={sameAsBilling} onChange={e => setSameAsBilling(e.target.checked)} />
+                Shipping same as billing
+              </label>
+            </div>
+
+            {!sameAsBilling && (
+              <div style={{
+                background: '#fff',
+                padding: '1.5rem',
+                borderRadius: '12px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+              }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem', color: '#2d3748' }}>Shipping Address</h2>
+                <div className="address-grid" style={{ display: 'grid', gap: '0.75rem' }}>
+                  <input style={inputStyle} placeholder="Full name" value={shipping.name} onChange={e => updateShipping('name', e.target.value)} required />
+                  <input style={inputStyle} placeholder="Phone" value={shipping.phone} onChange={e => updateShipping('phone', e.target.value)} />
+                  <input style={inputStyle} placeholder="Address line 1" value={shipping.line1} onChange={e => updateShipping('line1', e.target.value)} required />
+                  <input style={inputStyle} placeholder="Address line 2" value={shipping.line2} onChange={e => updateShipping('line2', e.target.value)} />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '0.75rem' }}>
+                    <input style={inputStyle} placeholder="City" value={shipping.city} onChange={e => updateShipping('city', e.target.value)} required />
+                    <input style={inputStyle} placeholder="State" value={shipping.state} onChange={e => updateShipping('state', e.target.value)} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '0.75rem' }}>
+                    <input style={inputStyle} placeholder="Postal code" value={shipping.postal_code} onChange={e => updateShipping('postal_code', e.target.value)} />
+                    <input style={inputStyle} placeholder="Country" value={shipping.country} onChange={e => updateShipping('country', e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{
+              background: '#fff',
+              padding: '2rem',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+            }}>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '600',
+                marginBottom: '1.5rem',
+                color: '#2d3748',
+              }}>
+                Payment Information
+              </h2>
             {SKIP_PAYMENT_CHECKOUT && (
               <button
                 type="button"
@@ -355,8 +443,9 @@ function CheckoutForm() {
               </button>
             </form>
           </div>
+        </div>
 
-          <div style={{
+        <div style={{
             background: '#fff',
             padding: '2rem',
             borderRadius: '12px',

@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import ApiDebug from './pages/ApiDebug';
 import MyOrders from './pages/MyOrders';
 import Profile from './pages/Profile';
+import MyOrderDetail from './pages/MyOrderDetail';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/cart" element={<Cart/>} />
         <Route path="/checkout" element={<Checkout/>} />
         <Route path="/my-orders" element={<MyOrders/>} />
+        <Route path="/my-orders/:id" element={<MyOrderDetail/>} />
         <Route path="/profile" element={<Profile/>} />
       </Routes>
     </Router>
