@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import api, { applyTheme } from '../services/api';
 
 export default function Header(){
   const [settings, setSettings] = useState({});
@@ -10,36 +10,23 @@ export default function Header(){
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    api.settings.get().then(data => setSettings(data.data || data || {}));
-    // try fetch user if token present
+  const loadUser = async () => {
     const token = localStorage.getItem('token');
-    if (token) {
-      api.auth.user(token).then(d => {
-        const userData = d.data || d;
-        if (userData && !d.error) setUser(userData);
-      }).catch(() => {
-        localStorage.removeItem('token');
-      });
+    if (!token) {
+      setUser(null);
+      return;
     }
-    if (token) {
-      updateCartCount();
-    }
-  },[]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
+    try {
+      const d = await api.auth.user(token);
+      const userData = d.data || d;
+      if (userData && !d.error) {
+        setUser(userData);
       }
+    } catch {
+      localStorage.removeItem('token');
+      setUser(null);
     }
-
-    if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [dropdownOpen]);
+  };
 
   const updateCartCount = async () => {
     try {
@@ -55,6 +42,61 @@ export default function Header(){
     }
   };
 
+  useEffect(()=>{
+    const loadSettings = async () => {
+      try {
+        const data = await api.settings.get();
+        const settingsData = data.data || data || {};
+        setSettings(settingsData);
+        
+        // Apply theme colors if available
+        if (settingsData.css_variables) {
+          applyTheme(settingsData.css_variables);
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
+
+    loadSettings();
+    // try fetch user if token present
+    loadUser();
+    updateCartCount();
+  },[]);
+
+  useEffect(() => {
+    function onCartUpdated() {
+      updateCartCount();
+    }
+
+    window.addEventListener('cart_updated', onCartUpdated);
+    return () => window.removeEventListener('cart_updated', onCartUpdated);
+  }, []);
+
+  useEffect(() => {
+    function onAuthUpdated() {
+      loadUser();
+      updateCartCount();
+    }
+
+    window.addEventListener('auth_updated', onAuthUpdated);
+    return () => window.removeEventListener('auth_updated', onAuthUpdated);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [dropdownOpen]);
+
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -66,9 +108,9 @@ export default function Header(){
     }
     localStorage.removeItem('token');
     setUser(null);
+    setCartCount(0);
     setDropdownOpen(false);
     navigate('/');
-    window.location.reload();
   }
 
   const initials = user && user.name ? user.name.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase() : '';

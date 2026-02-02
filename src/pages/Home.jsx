@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import api from '../services/api';
+import api, { applyTheme } from '../services/api';
 import Carousel from '../components/Carousel';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
@@ -22,7 +22,13 @@ export default function Home(){
           console.error('Settings error:', settingsData.message);
           setSettings({});
         } else {
-          setSettings(settingsData.data || settingsData || {});
+          const settingsDataObj = settingsData.data || settingsData || {};
+          setSettings(settingsDataObj);
+          
+          // Apply theme colors if available
+          if (settingsDataObj.css_variables) {
+            applyTheme(settingsDataObj.css_variables);
+          }
         }
         
         // Handle products response

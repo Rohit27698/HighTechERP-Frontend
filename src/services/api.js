@@ -82,6 +82,54 @@ async function request(path, { method = 'GET', body = null, token = null } = {})
   }
 }
 
+async function requestMultipart(path, { method = 'POST', formData, token = null } = {}) {
+  const headers = {
+    'Accept': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  try {
+    const res = await fetch(`${API_BASE}/${path}`, {
+      method,
+      headers,
+      body: formData,
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+    let data = null;
+
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      return {
+        error: true,
+        status: res.status,
+        message: 'Invalid response format from server',
+        data: text.substring(0, 200),
+      };
+    }
+
+    if (!res.ok) {
+      return {
+        error: true,
+        status: res.status,
+        message: extractErrorMessage(data, res.status),
+        errors: data.errors || null,
+        data,
+      };
+    }
+
+    return data;
+  } catch (err) {
+    return {
+      error: true,
+      message: err.message || 'Network error. Please check your connection.',
+      status: 0,
+    };
+  }
+}
+
 function toFullUrl(path){
   if (!path) return path;
   if (path.startsWith('http')) return path;
@@ -105,6 +153,7 @@ export const auth = {
 export const cart = {
   show: (guest_id, token) => request(`cart?guest_id=${guest_id}`, { token }),
   add: (payload, token) => request('cart/add', { method: 'POST', body: payload, token }),
+  update: (payload, token) => request('cart/update', { method: 'POST', body: payload, token }),
   remove: (payload, token) => request('cart/remove', { method: 'POST', body: payload, token }),
 };
 
@@ -126,14 +175,30 @@ export const orders = {
 
 export const profile = {
   update: (payload, token) => request('auth/profile', { method: 'PUT', body: payload, token }),
+  uploadPicture: (file, token) => {
+    const formData = new FormData();
+    formData.append('profile_picture', file);
+    return requestMultipart('auth/profile/picture', { method: 'POST', formData, token });
+  },
+  deletePicture: (token) => request('auth/profile/picture', { method: 'DELETE', token }),
 };
 
 export const settings = {
   get: () => request('business-settings'),
 };
 
+// Apply custom CSS variables from business settings
+export const applyTheme = (cssVariables) => {
+  if (!cssVariables) return;
+  
+  const root = document.documentElement;
+  Object.entries(cssVariables).forEach(([key, value]) => {
+    root.style.setProperty(`--${key}`, value);
+  });
+};
+
 export const newsletter = {
   subscribe: (payload) => request('newsletter/subscribe', { method: 'POST', body: payload }),
 };
 
-export default { products, auth, cart, checkout, addresses, orders, profile, settings, newsletter, toFullUrl };
+export default { products, auth, cart, checkout, addresses, orders, profile, settings, newsletter, toFullUrl, applyTheme };

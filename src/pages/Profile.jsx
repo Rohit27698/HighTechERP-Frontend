@@ -69,26 +69,14 @@ export default function Profile() {
     setError(null);
     setSuccess(null);
 
-    const formData = new FormData();
-    formData.append('profile_picture', file);
-
     try {
-      const res = await fetch('/api/profile/picture', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (data.success) {
+      const res = await api.profile.uploadPicture(file, token);
+      if (res && !res.error && res.success) {
         setSuccess('Profile picture updated successfully!');
-        setUser(prev => ({ ...prev, profile_picture: data.profile_picture_url }));
+        setUser(res.user || user);
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(data.message || 'Failed to upload picture');
+        setError(res?.message || 'Failed to upload picture');
       }
     } catch (err) {
       setError('Failed to upload picture: ' + err.message);
@@ -106,21 +94,13 @@ export default function Profile() {
     setSuccess(null);
 
     try {
-      const res = await fetch('/api/profile/picture', {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-      });
-
-      const data = await res.json();
-      if (data.success) {
+      const res = await api.profile.deletePicture(token);
+      if (res && !res.error && res.success) {
         setSuccess('Profile picture deleted successfully!');
-        setUser(prev => ({ ...prev, profile_picture: null }));
+        setUser(res.user || { ...user, profile_picture: null });
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(data.message || 'Failed to delete picture');
+        setError(res?.message || 'Failed to delete picture');
       }
     } catch (err) {
       setError('Failed to delete picture: ' + err.message);

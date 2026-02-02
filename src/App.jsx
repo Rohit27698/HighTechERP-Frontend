@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Products from './pages/Products';
@@ -13,8 +13,25 @@ import ApiDebug from './pages/ApiDebug';
 import MyOrders from './pages/MyOrders';
 import Profile from './pages/Profile';
 import MyOrderDetail from './pages/MyOrderDetail';
+import { settings, applyTheme } from './services/api';
 
 function App() {
+  useEffect(() => {
+    // Apply theme from business settings
+    const loadTheme = async () => {
+      try {
+        const response = await settings.get();
+        if (response.success && response.data.css_variables) {
+          applyTheme(response.data.css_variables);
+        }
+      } catch (error) {
+        console.error('Failed to load theme:', error);
+      }
+    };
+
+    loadTheme();
+  }, []);
+
   return (
     <Router>
       <Header />

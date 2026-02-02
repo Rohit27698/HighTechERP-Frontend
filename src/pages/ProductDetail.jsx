@@ -65,6 +65,7 @@ export default function ProductDetail() {
         }
       } else {
         // Show success message
+        window.dispatchEvent(new Event('cart_updated'));
         const successMsg = document.createElement('div');
         successMsg.textContent = '✓ Added to cart!';
         successMsg.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:1rem 1.5rem;border-radius:8px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
@@ -192,7 +193,7 @@ export default function ProductDetail() {
               }}>
                 <span style={{ color: '#718096', fontSize: '0.9rem' }}>Vendor: </span>
                 <span style={{ fontWeight: '600', color: '#4a5568' }}>
-                  {product.vendor.name || 'Unknown'}
+                  {product.vendor.business_name || product.vendor.name || 'Unknown'}
                 </span>
               </div>
             )}

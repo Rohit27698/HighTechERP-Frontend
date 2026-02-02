@@ -11,7 +11,7 @@ export default function Carousel({images = []}){
 
   if (!images || images.length === 0) {
     return (
-      <div className="carousel" style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem'}}>
+      <div className="carousel" style={{background: 'var(--primary-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem'}}>
         No slider images available
       </div>
     );

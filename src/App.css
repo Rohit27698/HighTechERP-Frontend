@@ -1,5 +1,28 @@
 /* Modern E-commerce App Styles - Mini Flipkart Style */
 
+:root {
+  --primary-color: #667eea;
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-light: rgba(102, 126, 234, 0.15);
+  --primary-shadow: rgba(102, 126, 234, 0.35);
+  --secondary-color: #10b981;
+  --secondary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --secondary-light: rgba(16, 185, 129, 0.15);
+  --secondary-shadow: rgba(16, 185, 129, 0.35);
+  --button-color: #667eea;
+  --button-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --button-light: rgba(102, 126, 234, 0.15);
+  --button-shadow: rgba(102, 126, 234, 0.35);
+  --card-color: #ffffff;
+  --card-border: rgba(255, 255, 255, 0.2);
+  --footer-color: #1a202c;
+  --footer-text: #e2e8f0;
+  --header-color: #667eea;
+  --header-gradient: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+  --background-color: #f8f9fa;
+  --text-color: #333333;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -12,8 +35,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8f9fa;
-  color: #333;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 /* Container */
@@ -23,9 +46,380 @@ body {
   padding: 0 1rem;
 }
 
+/* Shared UI primitives */
+.page {
+  padding: 2rem 0;
+  min-height: 70vh;
+}
+
+.page-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #2d3748;
+  margin: 0 0 2rem;
+  letter-spacing: -0.02em;
+}
+
+.card {
+  background: var(--card-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid var(--card-border);
+}
+
+.card-pad {
+  padding: 1.5rem;
+}
+
+.toolbar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #fff;
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--button-gradient);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--button-shadow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--button-shadow);
+}
+
+.btn-secondary {
+  background: var(--secondary-gradient);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--secondary-shadow);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--secondary-shadow);
+}
+
+.btn-outline {
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  color: #2d3748;
+}
+
+.btn-outline:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.btn-danger:hover {
+  background: #fecaca;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.muted {
+  color: #718096;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5rem 1.5rem;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+/* Cart layout */
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.cart-item {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cart-item-img-link {
+  text-decoration: none;
+}
+
+.cart-item-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.cart-item-details {
+  flex: 1;
+}
+
+.cart-item-name-link {
+  text-decoration: none;
+  color: #2d3748;
+}
+
+.cart-item-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #2d3748;
+}
+
+.cart-item-price {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.cart-item-qty {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.qty-label {
+  font-size: 0.9rem;
+  color: #718096;
+}
+
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qty-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.qty-btn:hover {
+  background: #f7fafc;
+}
+
+.qty-value {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.cart-item-total {
+  margin-left: auto;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.cart-summary {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.cart-summary-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-summary-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+/* Card element wrapper */
+.card-element-wrapper {
+  padding: 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  background: #f7fafc;
+}
+
+.order-summary-items {
+  margin-bottom: 1.5rem;
+}
+
+.order-summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.order-summary-item:last-child {
+  border-bottom: none;
+}
+
+.order-item-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.order-item-price {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.order-summary-total {
+  padding-top: 1rem;
+  border-top: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-total-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.order-total-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* Checkout layout */
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.checkout-left {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.address-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.address-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: #4a5568;
+}
+
+/* Toast alerts */
+.alert-success {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #10b981;
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Form utilities */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+
+.link-primary {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link-primary:hover {
+  text-decoration: underline;
+}
+
 /* Header Styles */
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--header-gradient);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -185,7 +579,7 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
 }
 
 .avatar-lg {
@@ -262,7 +656,7 @@ body {
 }
 
 .dropdown-item svg {
-  color: #667eea;
+  color: var(--primary-color);
   flex-shrink: 0;
 }
 
@@ -370,7 +764,7 @@ body {
   transform: translateX(-50%);
   width: 80px;
   height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   border-radius: 2px;
 }
 
@@ -423,6 +817,7 @@ body {
   margin: 1rem 1rem 0.5rem;
   line-height: 1.4;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -431,7 +826,7 @@ body {
 .product-card .price {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #667eea;
+  color: var(--primary-color);
   margin: 0 1rem 1rem;
   display: flex;
   align-items: center;
@@ -447,7 +842,7 @@ body {
 .about {
   margin: 4rem 0;
   padding: 3rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   border-radius: 16px;
   color: #fff;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -471,8 +866,8 @@ body {
 
 /* Footer */
 .site-footer {
-  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-  color: #fff;
+  background: var(--footer-color);
+  color: var(--footer-text);
   padding: 3rem 0 1rem;
   margin-top: 4rem;
 }
@@ -488,11 +883,12 @@ body {
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #fff;
+  color: var(--footer-text);
 }
 
 .footer-inner .about p {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--footer-text);
+  opacity: 0.8;
   line-height: 1.6;
   font-size: 0.95rem;
 }
@@ -511,27 +907,28 @@ body {
 .subscribe-form input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--footer-text);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--footer-text);
   font-size: 1rem;
   transition: all 0.3s ease;
 }
 
 .subscribe-form input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--footer-text);
+  opacity: 0.6;
 }
 
 .subscribe-form input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--button-color);
   background: rgba(255, 255, 255, 0.15);
 }
 
 .subscribe-form button {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--button-gradient);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -543,7 +940,7 @@ body {
 
 .subscribe-form button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px var(--button-shadow);
 }
 
 .note {
@@ -672,7 +1069,7 @@ body {
   align-items: center;
   min-height: 200px;
   font-size: 1.2rem;
-  color: #667eea;
+  color: var(--primary-color);
 }
 
 /* Auth Form Styles */

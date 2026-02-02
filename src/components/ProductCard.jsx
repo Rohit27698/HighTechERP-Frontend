@@ -39,7 +39,7 @@ export default function ProductCard({product}){
               position: 'absolute',
               top: '10px',
               right: '10px',
-              background: 'rgba(102, 126, 234, 0.9)',
+              background: 'var(--primary-color)',
               color: '#fff',
               padding: '0.25rem 0.5rem',
               borderRadius: '6px',
@@ -57,7 +57,8 @@ export default function ProductCard({product}){
         {product.description && (
           <p style={{
             fontSize: '0.85rem',
-            color: '#718096',
+            color: 'var(--text-color)',
+            opacity: 0.7,
             margin: '0 1rem 1rem',
             lineHeight: '1.4',
             display: '-webkit-box',

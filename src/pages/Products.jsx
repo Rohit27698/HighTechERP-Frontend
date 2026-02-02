@@ -66,49 +66,26 @@ export default function Products() {
   }, [searchTerm, sortBy, products]);
 
   return (
-    <main className="products-page">
+    <main className="products-page page">
       <div className="container">
-        <h1>All Products</h1>
+        <h1 className="page-title">All Products</h1>
         
         {/* Search and Filter Bar */}
-        <div style={{
-          display: 'flex',
-          gap: '1rem',
-          marginBottom: '2rem',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}>
+        <div className="toolbar">
           <div style={{ flex: '1', minWidth: '250px' }}>
             <input
               type="text"
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                transition: 'all 0.3s ease',
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#667eea'}
-              onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              className="field"
             />
           </div>
           <div>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              style={{
-                padding: '0.75rem 1rem',
-                border: '2px solid #e2e8f0',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                background: '#fff',
-                transition: 'all 0.3s ease',
-              }}
+              className="field"
             >
               <option value="default">Sort by: Default</option>
               <option value="name">Sort by: Name</option>

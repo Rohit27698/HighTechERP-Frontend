@@ -1,10 +1,26 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import api from '../services/api';
 
 export default function Footer(){
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [settings, setSettings] = useState({});
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await api.settings.get();
+        if (response.success && response.data) {
+          setSettings(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   const subscribe = async (e) => {
     e.preventDefault();
@@ -33,7 +49,7 @@ export default function Footer(){
       <div className="container footer-inner">
         <div className="about">
           <h4>About Us</h4>
-          <p>We bring the best vendors together to deliver a delightful shopping experience. Discover quality products from trusted sellers all in one place.</p>
+          <p>{settings.about_us || settings.footer_text || 'We bring the best vendors together to deliver a delightful shopping experience. Discover quality products from trusted sellers all in one place.'}</p>
         </div>
         <div className="newsletter">
           <h4>Subscribe to Newsletter</h4>
